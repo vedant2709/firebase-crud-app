@@ -1,13 +1,37 @@
 import { Button } from "@mui/material";
-import React from "react";
+import React, { useEffect, useState } from "react";
+import BookDataService from "../services/book.services";
+import Alert from "./Alert";
 
-function BooksList() {
+function BooksList({getBookId}) {
+  const [books, setBooks] = useState([]);
+  const [message,setMessage]=useState({error:false,msg:""})
+  useEffect(() => {
+    getBooks();
+  }, []);
+
+  const getBooks = async () => {
+    const data = await BookDataService.getAllBooks();
+    console.log(data.docs);
+    setBooks(data.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+  };
+
+  const deleteHandler=async (id)=>{
+    await BookDataService.deleteBook(id);
+    getBooks();
+    setMessage({error:true,msg:"Book Deleted Successfully"})
+  }
+
   return (
     <div className="w-full">
+      {/* <pre>{JSON.stringify(books,undefined,2)}</pre> */}
+      {message.msg !== "" && (
+        <Alert message={message} setMessage={setMessage} />
+      )}
       <div className="w-full flex justify-center">
-        <Button variant="contained" sx={{ backgroundColor: "black" }}>
+        <Button variant="contained" sx={{ backgroundColor: "black" }} onClick={(e)=>getBooks()}>
           Refresh List
-        </Button>
+        </Button> 
       </div>
       <div className="w-full flex justify-center mt-3 py-3">
         <table class="border-collapse  border border-slate-800">
@@ -29,26 +53,40 @@ function BooksList() {
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td className="text-center border border-slate-800 py-2">1</td>
-              <td className="text-center border border-slate-800 py-2">
-                Node JS
-              </td>
-              <td className="text-center border border-slate-800 py-2">
-                Vedant Chaudhary
-              </td>
-              <td className="text-center border border-slate-800 py-2">
-                Available
-              </td>
-              <td className="text-center border border-slate-800 py-2 flex justify-center gap-3">
-                <Button variant="contained" sx={{ backgroundColor: "gray" }}>
-                  Edit
-                </Button>
-                <Button variant="contained" sx={{ backgroundColor: "red" }}>
-                  Delete
-                </Button>
-              </td>
-            </tr>
+            {books.map((doc, index) => {
+              return (
+                <tr key={doc.id}>
+                  <td className="text-center border border-slate-800 py-2">
+                    {index + 1}
+                  </td>
+                  <td className="text-center border border-slate-800 py-2">
+                    {doc.title}
+                  </td>
+                  <td className="text-center border border-slate-800 py-2">
+                    {doc.author}
+                  </td>
+                  <td className="text-center border border-slate-800 py-2">
+                    {doc.status}
+                  </td>
+                  <td className="text-center border border-slate-800 py-2 flex justify-center gap-3">
+                    <Button
+                      variant="contained"
+                      sx={{ backgroundColor: "gray" }}
+                      onClick={(e) => getBookId(doc.id)}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      variant="contained"
+                      sx={{ backgroundColor: "red" }}
+                      onClick={(e) => deleteHandler(doc.id)}
+                    >
+                      Delete
+                    </Button>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

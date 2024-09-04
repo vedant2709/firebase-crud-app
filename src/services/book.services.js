@@ -31,9 +31,9 @@ class BookDataService{
         return getDocs(bookCollectionRef)
     }
 
-    getBook=()=>{
+    getBook=(id)=>{
         const bookDoc=doc(db,"books",id)
-        return getDocs(bookDoc)
+        return getDoc(bookDoc)
     }
 }
 
